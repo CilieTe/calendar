@@ -9,6 +9,8 @@ export default async function Home() {
     redirect("/login")
   }
 
+  const { user: sessionUser } = session!; 
+
   const user = {
     id: session.user.id as string,
     name: session.user.name,
