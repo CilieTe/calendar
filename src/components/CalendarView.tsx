@@ -103,7 +103,7 @@ export default function CalendarView({
           
           <div className="text-right flex flex-col items-end">
             <div className="bg-[#5a4d3f] text-[#fdfaf5] px-3 py-1 text-xs font-serif-book mb-2 rounded-sm">
-              {lunar.lunarMonth}月{lunar.lunarDay}
+              {lunar.lunarMonth}{lunar.lunarDay}
             </div>
             {lunar.term && (
               <span className="text-lg font-calligraphy text-[#8a7a6a]">{lunar.term}</span>
