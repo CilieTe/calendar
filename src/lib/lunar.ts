@@ -1,3 +1,4 @@
+// @ts-expect-error: lunar-javascript provides no type definitions
 import { Solar, Lunar } from "lunar-javascript";
 
 export interface LunarInfo {
