@@ -6,7 +6,7 @@ import { formatLunarDate } from "@/lib/lunar"
 import { signOut } from "next-auth/react"
 
 interface User {
-  id: string | undefined
+  id: string
   name?: string | null
   email?: string | null
   image?: string | null
