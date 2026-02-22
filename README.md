@@ -1,140 +1,225 @@
-# 📚 典藏文学日历 Cloud - PWA 测试版
+# 📚 典藏文学日历 Cloud
 
-基于 Next.js + Prisma + PostgreSQL 的云端日历应用，**PWA 版本**。
+基于 Next.js + Prisma + PostgreSQL 的云端日历应用。
 
 🔗 **在线访问**: https://calendar-black-nu.vercel.app
 
 ---
 
-## ✨ PWA 特性（测试版新增）
+## ✨ 功能特点
 
-- 📱 **添加到主屏幕** - 像原生 App 一样从桌面启动
-- 🌐 **离线可用** - 缓存静态资源，无网也能查看（基础版）
-- 🎨 **全屏体验** - 隐藏浏览器地址栏，沉浸式使用
-- 📲 **响应式优化** - 适配手机/平板/桌面
+- 📅 **优雅日历** - 超大日期展示 + 传统农历（十二律月名）+ 节气
+- 📖 **文学人物** - 每日一位经典文学角色，配有名言摘录
+- ✅ **待办清单** - 简洁的 TODO 管理，支持完成状态切换
+- 📝 **日程备忘** - 快速记录每日重要事项
+- 🔐 **GitHub 登录** - 安全的 OAuth 认证
+- ☁️ **云端同步** - 数据自动保存到 PostgreSQL，多设备自动同步
+- 📱 **PWA 支持** - 可安装到桌面/手机，离线查看
 
 ---
 
-## 🆚 与主版本区别
+## 🎨 UI 设计
 
-| 特性 | 主版本 (cloud) | PWA 测试版 (cloud-pwa-dev) |
-|------|----------------|---------------------------|
-| PWA 支持 | ❌ | ✅ |
-| 离线功能 | ❌ | 基础版（静态资源缓存） |
-| 安装到桌面 | ❌ | ✅ |
-| 图标 | 无 | SVG 占位图标 |
+- **左右分栏布局** - 左侧文学画廊 + 右侧日历工具
+- **书本式容器** - 圆角卡片设计，类似翻开的书本
+- **暖色调配色** - 米色 `#f4f1ea`、深棕 `#5a4d3f`、 cream `#fdfaf5`
+- **传统字体** - Noto Serif SC（正文）+ Ma Shan Zheng（书法标题）
+- **竖排文字** - 文学人物名字采用传统竖排展示
 
 ---
 
 ## 🛠️ 技术栈
 
-- **前端**: Next.js 15 + React 19 + TypeScript + Tailwind CSS
-- **认证**: NextAuth.js v5 + GitHub OAuth
-- **数据库**: PostgreSQL (Neon) + Prisma ORM
-- **PWA**: next-pwa (Workbox)
-- **部署**: Vercel
+| 层级 | 技术 |
+|------|------|
+| **前端** | Next.js 15 + React 19 + TypeScript + Tailwind CSS |
+| **认证** | NextAuth.js v5 + GitHub OAuth |
+| **数据库** | PostgreSQL (Neon) + Prisma ORM |
+| **PWA** | next-pwa (Workbox) |
+| **部署** | Vercel |
 
 ---
 
-## 🚀 本地开发
+## 🚀 快速开始
+
+### 本地开发
 
 ```bash
-# 进入项目目录
-cd ~/.openclaw/workspace/projects/calendar/cloud-pwa-dev
+# 1. 进入项目目录
+cd ~/.openclaw/workspace/projects/calendar/cloud
 
-# 安装依赖
+# 2. 安装依赖
 npm install
 
-# 配置环境变量
+# 3. 配置环境变量
 cp .env.example .env.local
 # 编辑 .env.local 填入你的配置
 
-# 初始化数据库
+# 4. 初始化数据库
 npx prisma db push
 
-# 启动开发服务器
+# 5. 启动开发服务器
 npm run dev
 ```
 
-**注意**: PWA 功能只在生产构建中启用（`next dev` 时自动禁用）。
-
----
-
-## 📱 测试 PWA 功能
-
-### 1. 构建生产版本
-
-```bash
-npm run build
-```
-
-### 2. 本地测试
-
-```bash
-npx serve out
-```
-
 访问 http://localhost:3000
-
-### 3. 安装到桌面/手机
-
-**桌面 (Chrome/Edge)**:
-1. 打开网站
-2. 地址栏右侧点击「安装」图标
-3. 或使用菜单 → 更多工具 → 创建快捷方式
-
-**iOS (Safari)**:
-1. 打开网站
-2. 点击分享按钮
-3. 选择「添加到主屏幕」
-
-**Android (Chrome)**:
-1. 打开网站
-2. 点击菜单 → 添加到主屏幕
-3. 或等待底部弹窗提示
 
 ---
 
 ## 📋 环境变量
 
-同主版本：
+创建 `.env.local` 文件：
 
 ```env
-DATABASE_URL="postgresql://..."
+# 数据库
+DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
+
+# NextAuth
 NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="..."
-GITHUB_CLIENT_ID="..."
-GITHUB_CLIENT_SECRET="..."
+NEXTAUTH_SECRET="your-random-secret-key"
+
+# GitHub OAuth
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
 ```
 
 ---
 
-## ⚠️ PWA 限制（本版本）
+## 📦 部署到 Vercel
 
-1. **离线功能 - 基础版**
-   - ✅ 缓存：HTML/CSS/JS/图标
-   - ❌ 动态数据（需要联网才能获取/保存日程）
-   - 原因：离线情况不多，简化实现
+### 1. 准备
 
-2. **图标为占位符**
-   - 使用 SVG 生成的「文」字图标
-   - 后续可替换为设计好的图标
+```bash
+git add .
+git commit -m "Update"
+git push origin main
+```
 
-3. **推送通知**
-   - 本版本未启用
-   - 需要额外配置和权限申请
+### 2. Vercel 配置
+
+1. 登录 https://vercel.com，导入 GitHub 仓库
+2. **Build Command** 设置为：
+   ```
+   npx prisma generate && npx prisma db push && next build
+   ```
+3. 添加环境变量（同上）
+4. 点击 Deploy
+
+### 3. 配置 GitHub OAuth
+
+在 https://github.com/settings/developers 更新：
+- Homepage URL: `https://your-domain.vercel.app`
+- Authorization callback URL: `https://your-domain.vercel.app/api/auth/callback/github`
+
+---
+
+## 📱 PWA 安装
+
+### 桌面 (Chrome/Edge)
+1. 打开网站
+2. 地址栏右侧点击「安装」图标
+3. 或使用菜单 → 更多工具 → 创建快捷方式
+
+### iOS (Safari)
+1. 打开网站
+2. 点击分享按钮
+3. 选择「添加到主屏幕」
+
+### Android (Chrome)
+1. 打开网站
+2. 点击菜单 → 添加到主屏幕
+
+---
+
+## 📁 项目结构
+
+```
+cloud/
+├── prisma/
+│   └── schema.prisma          # 数据库模型定义
+├── public/
+│   ├── manifest.json          # PWA 配置
+│   └── icons/                 # PWA 图标
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/[...nextauth]/  # NextAuth 路由
+│   │   │   └── events/              # 日程 CRUD API
+│   │   ├── login/             # 登录页面
+│   │   ├── page.tsx           # 主页面
+│   │   ├── layout.tsx         # 根布局
+│   │   └── globals.css        # 全局样式
+│   ├── components/
+│   │   ├── LiteraryView.tsx   # 文学人物展示
+│   │   └── CalendarView.tsx   # 日历工具
+│   ├── data/
+│   │   └── literaryData.ts    # 文学人物数据库
+│   └── lib/
+│       ├── auth.ts            # NextAuth 配置
+│       ├── db.ts              # Prisma 客户端
+│       └── lunar.ts           # 农历计算
+├── .env.example               # 环境变量示例
+├── next.config.js             # Next.js + PWA 配置
+└── package.json
+```
+
+---
+
+## 🗄️ 数据库模型
+
+### User
+- `id`: 用户唯一标识
+- `email`: 邮箱（GitHub）
+- `name`: 昵称
+- `image`: 头像
+
+### Event（日程/待办）
+- `id`: 唯一标识
+- `title`: 内容
+- `date`: 日期 (YYYY-MM-DD)
+- `isTodo`: true=待办, false=备忘
+- `completed`: 完成状态
+- `userId`: 所属用户（自动隔离）
+
+---
+
+## ⚠️ 已知限制
+
+### 1. 网络访问（中国大陆）
+- Vercel 部署在海外，访问速度可能较慢
+- **GitHub OAuth 登录不稳定**，可能需要 VPN
+- **解决方案**：添加邮箱登录（待开发）
+
+### 2. 功能限制
+- 文学人物数据目前只有示例（5条）
+- 图片资源需要手动上传
+- 离线功能仅缓存静态资源
+
+---
+
+## 📝 使用提示
+
+- **数据自动保存** - 无需手动同步，操作后立即写入数据库
+- **多设备同步** - 在不同设备登录同一账号自动同步
+- **农历显示** - 采用传统十二律命名（太簇、夹钟、姑洗等）
+- **PWA 离线** - 安装后无网也能查看页面（不能保存数据）
 
 ---
 
 ## 📝 后续优化方向
 
-- [ ] 设计正式版图标（多尺寸 PNG）
-- [ ] 完整离线功能（IndexedDB 缓存日程数据）
-- [ ] 推送通知（任务提醒）
-- [ ] 后台同步（离线操作联网后自动同步）
+- [ ] 邮箱登录（国内用户免翻墙）
+- [ ] 完整文学人物数据库（366天）
+- [ ] 图片上传功能
+- [ ] 重复任务
+- [ ] 推送通知
 
 ---
 
 ## 📄 License
 
 MIT
+
+---
+
+<p align="center">Made with ❤️ for literary souls</p>
