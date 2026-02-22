@@ -18,7 +18,7 @@ export const getLunarInfo = (date: Date): LunarInfo => {
     lunarDay: lunar.getDayInChinese(),
     ganZhi: lunar.getYearInGanZhi(),
     zodiac: lunar.getYearShengXiao(),
-    term: solar.getJieQi() || null,
+    term: lunar.getJieQi() || null,
   };
 };
 
