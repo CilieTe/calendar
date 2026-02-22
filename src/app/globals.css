@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #f4f1ea;
+  --color-foreground: #3d3d3d;
+  --font-sans: 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif;
+  --font-serif: 'Noto Serif SC', 'SimSun', 'STSong', serif;
+  --font-calligraphy: 'Ma Shan Zheng', 'KaiTi', 'STKaiti', cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* 字体回退方案 */
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: local('Noto Serif SC'), local('Source Han Serif SC'), local('SimSun'), local('STSong');
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 300 500;
+  font-display: swap;
+  src: local('Noto Sans SC'), local('Source Han Sans SC'), local('Microsoft YaHei'), local('SimHei');
+}
+
+@font-face {
+  font-family: 'Ma Shan Zheng';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Ma Shan Zheng'), local('KaiTi'), local('STKaiti');
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Noto Sans SC', 'Microsoft YaHei', 'SimHei', sans-serif;
+  background-color: #f4f1ea;
+  color: #3d3d3d;
+}
+
+.font-serif-book {
+  font-family: 'Noto Serif SC', 'SimSun', 'STSong', serif;
+}
+
+.font-calligraphy {
+  font-family: 'Ma Shan Zheng', 'KaiTi', 'STKaiti', cursive;
+}
+
+/* Custom Scrollbar for the antique feel */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1cfc7;
+  border-radius: 10px;
+}
+
+/* Vertical writing mode */
+.writing-vertical {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* Selection color */
+::selection {
+  background-color: #5a4d3f;
+  color: white;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

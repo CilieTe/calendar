@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { getEntryForDate } from "@/data/literaryData"
-import { formatLunarDate } from "@/lib/lunar"
+import { useState } from "react"
+import { getLunarInfo } from "@/lib/lunar"
 import { signOut } from "next-auth/react"
 
 interface User {
@@ -24,290 +23,224 @@ interface Event {
 
 interface CalendarViewProps {
   user: User
+  date: Date
+  events: Event[]
+  onDateChange: (date: Date) => void
+  onAddTodo: (text: string) => void
+  onToggleTodo: (id: string, completed: boolean) => void
+  onDeleteTodo: (id: string) => void
+  onAddMemo: (text: string) => void
+  onDeleteMemo: (id: string) => void
 }
 
-export default function CalendarView({ user }: CalendarViewProps) {
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [events, setEvents] = useState<Event[]>([])
-  const [newTodo, setNewTodo] = useState("")
-  const [newMemo, setNewMemo] = useState("")
-  const [loading, setLoading] = useState(false)
+export default function CalendarView({
+  user,
+  date,
+  events,
+  onDateChange,
+  onAddTodo,
+  onToggleTodo,
+  onDeleteTodo,
+  onAddMemo,
+  onDeleteMemo,
+}: CalendarViewProps) {
+  const [todoInput, setTodoInput] = useState("")
+  const [memoInput, setMemoInput] = useState("")
+  const [showMemoInput, setShowMemoInput] = useState(false)
 
-  const literaryEntry = getEntryForDate(selectedDate)
-  const lunarText = formatLunarDate(selectedDate)
-  
-  const year = currentDate.getFullYear()
-  const month = currentDate.getMonth()
-  
-  // Get days in month
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstDayOfMonth = new Date(year, month, 1).getDay()
-  
-  // Get events for selected date
-  const selectedDateStr = selectedDate.toISOString().split("T")[0]
-  const todos = events.filter(e => e.isTodo && e.date === selectedDateStr)
-  const memos = events.filter(e => !e.isTodo && e.date === selectedDateStr)
+  const lunar = getLunarInfo(date)
+  const day = date.getDate()
+  const monthNames = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"]
+  const weekDays = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"]
 
-  useEffect(() => {
-    fetchEvents(selectedDateStr)
-  }, [selectedDateStr])
+  const dateStr = date.toISOString().split("T")[0]
+  const todos = events.filter(e => e.isTodo && e.date === dateStr)
+  const memos = events.filter(e => !e.isTodo && e.date === dateStr)
 
-  const fetchEvents = async (date: string) => {
-    try {
-      const res = await fetch(`/api/events?date=${date}`)
-      if (res.ok) {
-        const data = await res.json()
-        setEvents(data)
-      }
-    } catch (error) {
-      console.error("Failed to fetch events:", error)
-    }
+  const handleAddTodo = () => {
+    if (!todoInput.trim()) return
+    onAddTodo(todoInput)
+    setTodoInput("")
   }
 
-  const addTodo = async () => {
-    if (!newTodo.trim()) return
-    setLoading(true)
-    try {
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newTodo,
-          date: selectedDateStr,
-          isTodo: true,
-        }),
-      })
-      if (res.ok) {
-        setNewTodo("")
-        fetchEvents(selectedDateStr)
-      }
-    } finally {
-      setLoading(false)
-    }
+  const handleAddMemo = () => {
+    if (!memoInput.trim()) return
+    onAddMemo(memoInput)
+    setMemoInput("")
+    setShowMemoInput(false)
   }
 
-  const addMemo = async () => {
-    if (!newMemo.trim()) return
-    setLoading(true)
-    try {
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newMemo,
-          date: selectedDateStr,
-          isTodo: false,
-        }),
-      })
-      if (res.ok) {
-        setNewMemo("")
-        fetchEvents(selectedDateStr)
-      }
-    } finally {
-      setLoading(false)
-    }
+  const changeDay = (offset: number) => {
+    const nextDate = new Date(date)
+    nextDate.setDate(date.getDate() + offset)
+    onDateChange(nextDate)
   }
-
-  const toggleTodo = async (id: string, completed: boolean) => {
-    try {
-      await fetch(`/api/events?id=${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !completed }),
-      })
-      fetchEvents(selectedDateStr)
-    } catch (error) {
-      console.error("Failed to toggle todo:", error)
-    }
-  }
-
-  const deleteEvent = async (id: string) => {
-    try {
-      await fetch(`/api/events?id=${id}`, { method: "DELETE" })
-      fetchEvents(selectedDateStr)
-    } catch (error) {
-      console.error("Failed to delete event:", error)
-    }
-  }
-
-  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1))
-  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1))
-
-  const weekDays = ["日", "一", "二", "三", "四", "五", "六"]
-  const monthNames = [
-    "一月", "二月", "三月", "四月", "五月", "六月",
-    "七月", "八月", "九月", "十月", "十一月", "十二月"
-  ]
 
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-800">典藏文学日历</h1>
-          <p className="text-stone-600">欢迎，{user.name || user.email}</p>
-        </div>
+    <div className="h-full w-full flex flex-col bg-[#fdfaf5]">
+      {/* Header with user info */}
+      <div className="flex justify-between items-center px-8 py-4 border-b border-[#e5e0d5]">
+        <span className="text-sm text-[#8c8578]">欢迎，{user.name || user.email}</span>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="text-stone-600 hover:text-stone-800"
+          className="text-xs text-[#8c8578] hover:text-[#5a4d3f] transition-colors"
         >
           退出登录
         </button>
-      </header>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">
-              {year}年 {monthNames[month]}
-            </h2>
-            <div className="flex gap-2">
-              <button onClick={prevMonth} className="p-2 hover:bg-stone-100 rounded">←</button>
-              <button onClick={nextMonth} className="p-2 hover:bg-stone-100 rounded">→</button>
+      <div className="flex-1 p-12 overflow-hidden flex flex-col">
+        {/* Date Header */}
+        <div className="flex justify-between items-start mb-12">
+          <div>
+            <h1 className="text-8xl font-serif-book font-bold text-[#3d3d3d] -ml-1">{day}</h1>
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-sm font-medium tracking-[0.2em] text-[#a8a295]">{monthNames[date.getMonth()]}</span>
+              <div className="h-[1px] w-6 bg-[#d1cfc7]"></div>
+              <span className="text-sm text-[#8c8578]">{weekDays[date.getDay()]}</span>
             </div>
           </div>
-
-          {/* Week days */}
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map(day => (
-              <div key={day} className="text-center text-stone-500 text-sm py-2">
-                {day}
-              </div>
-            ))}
-          </div>
-
-          {/* Days */}
-          <div className="grid grid-cols-7 gap-1">
-            {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-              <div key={`empty-${i}`} className="h-24" />
-            ))}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1
-              const date = new Date(year, month, day)
-              const isSelected = date.toDateString() === selectedDate.toDateString()
-              const isToday = date.toDateString() === new Date().toDateString()
-              const dateStr = date.toISOString().split("T")[0]
-              const hasEvents = events.some(e => e.date === dateStr)
-
-              return (
-                <button
-                  key={day}
-                  onClick={() => setSelectedDate(date)}
-                  className={`
-                    h-24 p-2 text-left border rounded transition-colors
-                    ${isSelected ? "bg-stone-200 border-stone-400" : "hover:bg-stone-50 border-stone-200"}
-                    ${isToday ? "ring-2 ring-stone-400" : ""}
-                  `}
-                >
-                  <span className={`text-lg ${isToday ? "font-bold text-stone-800" : "text-stone-700"}`}>
-                    {day}
-                  </span>
-                  {hasEvents && (
-                    <div className="mt-1 w-2 h-2 bg-stone-400 rounded-full" />
-                  )}
-                </button>
-              )
-            })}
+          
+          <div className="text-right flex flex-col items-end">
+            <div className="bg-[#5a4d3f] text-[#fdfaf5] px-3 py-1 text-xs font-serif-book mb-2 rounded-sm">
+              {lunar.lunarMonth}月{lunar.lunarDay}
+            </div>
+            {lunar.term && (
+              <span className="text-lg font-calligraphy text-[#8a7a6a]">{lunar.term}</span>
+            )}
           </div>
         </div>
 
-        {/* Side Panel */}
-        <div className="space-y-6">
-          {/* Literary Character */}
-          <div className="bg-stone-800 text-stone-100 rounded-lg p-6">
-            <div className="text-stone-400 text-sm mb-2">{lunarText}</div>
-            <h3 className="text-xl font-bold mb-1">{literaryEntry.name}</h3>
-            <p className="text-stone-400 text-sm mb-4">{literaryEntry.source}</p>
-            <blockquote className="text-stone-300 italic text-sm leading-relaxed border-l-2 border-stone-600 pl-4">
-              "{literaryEntry.quote}"
-            </blockquote>
+        {/* Todo Section */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <h2 className="text-sm font-bold text-[#5a4d3f] mb-6 tracking-widest uppercase border-b border-[#e5e0d5] pb-2">
+            今日事务清单
+          </h2>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            {todos.map(todo => (
+              <div key={todo.id} className="group flex items-center gap-3">
+                <input 
+                  type="checkbox" 
+                  checked={todo.completed} 
+                  onChange={() => onToggleTodo(todo.id, todo.completed)}
+                  className="w-4 h-4 rounded-full border-[#d1cfc7] text-[#5a4d3f] focus:ring-[#5a4d3f]"
+                />
+                <span className={`flex-1 text-[#5a4d3f] font-serif-book text-lg transition-all ${todo.completed ? 'opacity-40 line-through' : ''}`}>
+                  {todo.title}
+                </span>
+                <button 
+                  onClick={() => onDeleteTodo(todo.id)}
+                  className="text-[#d1cfc7] hover:text-red-800 transition-opacity md:opacity-0 md:group-hover:opacity-100 opacity-100"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            ))}
+            
+            <div className="flex items-center gap-2">
+              <input 
+                type="text"
+                value={todoInput}
+                onChange={(e) => setTodoInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddTodo()}
+                placeholder="+ 添加新任务..."
+                className="flex-1 bg-transparent border-none focus:ring-0 text-[#a8a295] font-serif-book italic text-lg p-0 placeholder:text-[#d1cfc7]/60"
+              />
+              <button
+                onClick={handleAddTodo}
+                className="text-[#5a4d3f] hover:text-[#3d3d3d] transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+              </button>
+            </div>
           </div>
+        </div>
 
-          {/* Selected Date Info */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-4">
-              {selectedDate.getMonth() + 1}月{selectedDate.getDate()}日
-            </h3>
-
-            {/* Todos */}
-            <div className="mb-6">
-              <h4 className="text-sm font-medium text-stone-600 mb-2">待办事项</h4>
-              <div className="space-y-2 mb-3">
-                {todos.map(todo => (
-                  <div key={todo.id} className="flex items-center gap-2 group">
-                    <input
-                      type="checkbox"
-                      checked={todo.completed}
-                      onChange={() => toggleTodo(todo.id, todo.completed)}
-                      className="rounded"
-                    />
-                    <span className={`flex-1 ${todo.completed ? "line-through text-stone-400" : ""}`}>
-                      {todo.title}
-                    </span>
-                    <button
-                      onClick={() => deleteEvent(todo.id)}
-                      className="text-stone-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newTodo}
-                  onChange={(e) => setNewTodo(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addTodo()}
-                  placeholder="添加待办..."
-                  className="flex-1 px-3 py-2 border rounded text-sm"
-                />
-                <button
-                  onClick={addTodo}
-                  disabled={loading}
-                  className="px-4 py-2 bg-stone-800 text-white rounded text-sm hover:bg-stone-700 disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
+        {/* Memo Section */}
+        {memos.length > 0 && (
+          <div className="mt-6 pt-6 border-t border-[#e5e0d5]">
+            <h3 className="text-xs font-bold text-[#8c8578] mb-3 tracking-widest uppercase">备忘</h3>
+            <div className="space-y-2">
+              {memos.map(memo => (
+                <div key={memo.id} className="group flex items-center justify-between bg-[#f4f1ea] p-3 rounded">
+                  <span className="text-sm text-[#5a4d3f] font-serif-book">{memo.title}</span>
+                  <button
+                    onClick={() => onDeleteMemo(memo.id)}
+                    className="text-[#d1cfc7] hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+              ))}
             </div>
+          </div>
+        )}
 
-            {/* Memos */}
-            <div>
-              <h4 className="text-sm font-medium text-stone-600 mb-2">备忘</h4>
-              <div className="space-y-2 mb-3">
-                {memos.map(memo => (
-                  <div key={memo.id} className="bg-stone-50 p-3 rounded text-sm group relative">
-                    {memo.title}
-                    <button
-                      onClick={() => deleteEvent(memo.id)}
-                      className="absolute top-2 right-2 text-stone-400 hover:text-red-500 opacity-0 group-hover:opacity-100"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newMemo}
-                  onChange={(e) => setNewMemo(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && addMemo()}
-                  placeholder="添加备忘..."
-                  className="flex-1 px-3 py-2 border rounded text-sm"
-                />
-                <button
-                  onClick={addMemo}
-                  disabled={loading}
-                  className="px-4 py-2 bg-stone-600 text-white rounded text-sm hover:bg-stone-500 disabled:opacity-50"
-                >
-                  +
-                </button>
-              </div>
+        {/* Footer */}
+        <div className="mt-8 pt-6 border-t border-[#e5e0d5] flex items-center justify-between">
+          {!showMemoInput ? (
+            <button 
+              onClick={() => setShowMemoInput(true)}
+              className="flex items-center gap-2 text-[#8c8578] hover:text-[#5a4d3f] transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              <span className="text-sm font-medium">添加备忘</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 flex-1">
+              <input
+                type="text"
+                value={memoInput}
+                onChange={(e) => setMemoInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddMemo()}
+                placeholder="输入备忘内容..."
+                className="flex-1 px-3 py-2 border border-[#e5e0d5] rounded text-sm focus:outline-none focus:border-[#5a4d3f]"
+                autoFocus
+              />
+              <button
+                onClick={handleAddMemo}
+                className="px-3 py-2 bg-[#5a4d3f] text-white rounded text-sm hover:bg-[#4a3d2f]"
+              >
+                添加
+              </button>
+              <button
+                onClick={() => setShowMemoInput(false)}
+                className="px-3 py-2 text-[#8c8578] hover:text-[#5a4d3f]"
+              >
+                取消
+              </button>
             </div>
+          )}
+
+          {/* Navigation */}
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => changeDay(-1)}
+              className="text-xs font-medium text-[#5a4d3f] uppercase tracking-widest hover:underline"
+            >
+              ← 前一日
+            </button>
+            <button 
+              onClick={() => onDateChange(new Date())}
+              className="text-xs font-medium text-[#5a4d3f] uppercase tracking-widest hover:underline"
+            >
+              今日
+            </button>
+            <button 
+              onClick={() => changeDay(1)}
+              className="text-xs font-medium text-[#5a4d3f] uppercase tracking-widest hover:underline"
+            >
+              后一日 →
+            </button>
           </div>
         </div>
       </div>
