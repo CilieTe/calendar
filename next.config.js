@@ -8,8 +8,8 @@ const withPWA = require('next-pwa')({
 
 const nextConfig = withPWA({
   output: 'standalone',
-  // 禁用 Turbopack，使用 webpack（next-pwa 需要）
-  turbopack: false,
+  // 空 turbopack 配置（禁用 turbopack，使用 webpack）
+  turbopack: {},
 })
 
 module.exports = nextConfig
