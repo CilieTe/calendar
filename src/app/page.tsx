@@ -6,6 +6,7 @@ import { redirect } from "next/navigation"
 import LiteraryView from "@/components/LiteraryView"
 import CalendarView from "@/components/CalendarView"
 import { getEntryForDate } from "@/data/literaryData"
+import { getLunarInfo } from "@/lib/lunar"
 
 interface Event {
   id: string
@@ -31,6 +32,10 @@ export default function Home() {
   const dateStr = currentDate.toISOString().split("T")[0]
   const dateKey = dateStr.substring(5) // MM-DD format
   const literaryEntry = getEntryForDate(currentDate)
+  
+  // 获取节气信息
+  const lunarInfo = getLunarInfo(currentDate)
+  const term = lunarInfo.term
 
   // Fetch events for current date
   useEffect(() => {
@@ -149,7 +154,7 @@ export default function Home() {
         
         {/* Left Side: Literary Gallery */}
         <div className="w-full md:w-1/2 h-full border-r border-[#e5e0d5]">
-          <LiteraryView entry={literaryEntry} dateKey={dateKey} />
+          <LiteraryView entry={literaryEntry} dateKey={dateKey} term={term} />
         </div>
 
         {/* Right Side: Calendar Tools */}
