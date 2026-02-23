@@ -1,1 +1,1 @@
-../../../shared/literaryData.ts
+../shared/literaryData.ts
