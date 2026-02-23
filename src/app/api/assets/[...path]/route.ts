@@ -2,15 +2,19 @@ import { NextRequest, NextResponse } from "next/server"
 import { readFile } from "fs/promises"
 import path from "path"
 
-// GET /api/assets/:path
-export async function GET(request: NextRequest) {
-  const { pathname } = new URL(request.url)
-  // 提取文件路径：/api/assets/jieqi/立春.png -> jieqi/立春.png
-  const filePath = pathname.replace(/^\/api\/assets\//, "")
+// GET /api/assets/[...path]
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  const { path: pathSegments } = await params
   
-  if (!filePath) {
+  if (!pathSegments || pathSegments.length === 0) {
     return new NextResponse("Not found", { status: 404 })
   }
+  
+  // 拼接文件路径：["jieqi", "立春.png"] -> "jieqi/立春.png"
+  const filePath = pathSegments.join("/")
   
   try {
     const absolutePath = path.join(process.cwd(), "shared", "assets", filePath)

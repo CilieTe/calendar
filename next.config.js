@@ -14,6 +14,13 @@ const nextConfig = withPWA({
   // 空 turbopack 配置（禁用 turbopack，使用 webpack）
   turbopack: {},
   
+  // 确保 shared/assets 被复制到 standalone 输出
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/assets': ['./shared/**/*'],
+    },
+  },
+  
   // 静态资源重定向：/assets/* -> shared/assets/*
   async rewrites() {
     return [
