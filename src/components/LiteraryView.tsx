@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { LiteraryEntry } from "@/data/literaryData"
+import { LiteraryEntry } from "@/shared/literaryData"
 
 interface LiteraryViewProps {
   entry: LiteraryEntry

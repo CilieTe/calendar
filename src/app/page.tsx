@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 import LiteraryView from "@/components/LiteraryView"
 import CalendarView from "@/components/CalendarView"
-import { getEntryForDate } from "@/data/literaryData"
+import { getEntryForDate } from "@/shared/literaryData"
 import { getLunarInfo } from "@/lib/lunar"
 
 interface Event {
